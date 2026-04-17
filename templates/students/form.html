@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm mb-5">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <h5 class="mb-3 pb-2 border-bottom">Basic Info</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.roll_number.label(class="form-label") }}
+                            {{ form.roll_number(class="form-control") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            {{ form.department.label(class="form-label") }}
+                            {{ form.department(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.batch_year.label(class="form-label") }}
+                            {{ form.batch_year(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 pb-2 border-bottom">Academics & Skills</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.cgpa.label(class="form-label") }}
+                            {{ form.cgpa(class="form-control", step="0.01") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.backlogs.label(class="form-label") }}
+                            {{ form.backlogs(class="form-control") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.skills.label(class="form-label") }}
+                            {{ form.skills(class="form-control", placeholder="Python, Java, React...") }}
+                            <div class="form-text">Comma separated</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            {{ form.projects.label(class="form-label") }}
+                            {{ form.projects(class="form-control") }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.internships.label(class="form-label") }}
+                            {{ form.internships(class="form-control") }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.communication_score.label(class="form-label") }}
+                            {{ form.communication_score(class="form-control") }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.aptitude_score.label(class="form-label") }}
+                            {{ form.aptitude_score(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 pb-2 border-bottom">Extra Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.linkedin_url.label(class="form-label") }}
+                            {{ form.linkedin_url(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.github_url.label(class="form-label") }}
+                            {{ form.github_url(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.extra_curricular.label(class="form-label") }}
+                        {{ form.extra_curricular(class="form-control", rows="3") }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.resume.label(class="form-label") }}
+                        {{ form.resume(class="form-control") }}
+                        <div class="form-text">PDF only, max 5MB.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        {% if student %}
+                            <a href="{{ url_for('students.detail', id=student.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        {% else %}
+                            <a href="{{ url_for('students.list_students') }}" class="btn btn-outline-secondary">Cancel</a>
+                        {% endif %}
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

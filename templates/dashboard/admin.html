@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Users</h5>
+                <h2 class="display-4">{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Students</h5>
+                <h2 class="display-4">{{ total_students }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">Placement %</h5>
+                <h2 class="display-4">{{ placement_percentage }}%</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Recent Predictions</h4>
+<table class="table table-striped pb-4">
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Probability</th>
+            <th>Class</th>
+            <th>Version</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pred in recent_predictions %}
+        <tr>
+            <td>{{ pred.student_id }}</td>
+            <td>{{ "%.2f"|format(pred.predicted_probability * 100) }}%</td>
+            <td>
+                {% if pred.predicted_class %}
+                    <span class="badge bg-success">Placed</span>
+                {% else %}
+                    <span class="badge bg-danger">Not Placed</span>
+                {% endif %}
+            </td>
+            <td>{{ pred.model_version }}</td>
+            <td>{{ pred.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center">No recent predictions</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

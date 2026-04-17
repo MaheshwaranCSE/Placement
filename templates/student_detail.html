@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.name }} — Placement Detail</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">🎓 Campus Placement Portal</div>
+    <div class="nav-right">
+        <span class="nav-user">👤 {{ user }}</span>
+        <a href="{{ url_for('dashboard') }}" class="btn-nav-add">← Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="btn-nav-logout">Logout</a>
+    </div>
+</nav>
+
+<div class="main-container">
+
+    <!-- ── STUDENT HEADER ─────────────────────────────────────────────────── -->
+    <div class="detail-header">
+        <div class="detail-identity">
+            <h2>{{ student.name }}</h2>
+            <p>{{ student.student_id }} &nbsp;|&nbsp; {{ student.department }}</p>
+        </div>
+        <div class="detail-status">
+            <span class="status-badge-lg status-{{ student.placement_status | lower | replace(' ','-') }}">
+                {% if student.placement_status == 'Ready' %}✅
+                {% elif student.placement_status == 'Moderate' %}⚠️
+                {% else %}❌{% endif %}
+                {{ student.placement_status }}
+            </span>
+            <p class="detail-score">Assessment Score: <strong>{{ student.placement_assessment_score }}/100</strong></p>
+        </div>
+    </div>
+
+    <!-- ── OVERRIDE NOTICE ────────────────────────────────────────────────── -->
+    {% if student.override_applied %}
+    <div class="alert alert-warning">
+        🔒 <strong>Override Applied:</strong> {{ student.override_reason }}
+    </div>
+    {% endif %}
+
+    <!-- ── SCORE BREAKDOWN ────────────────────────────────────────────────── -->
+    <div class="detail-grid">
+
+        <!-- Score Cards -->
+        <div class="score-cards">
+            <h3>📊 Score Breakdown</h3>
+
+            <div class="score-item">
+                <span class="score-label">🧠 Aptitude</span>
+                <div class="score-track">
+                    <div class="score-fill" style="width:{{ student.aptitude_total }}%"></div>
+                </div>
+                <span class="score-val">{{ student.aptitude_total | round(1) }}/100</span>
+            </div>
+
+            <div class="score-item">
+                <span class="score-label">💻 Coding</span>
+                <div class="score-track">
+                    <div class="score-fill" style="width:{{ student.coding_total }}%"></div>
+                </div>
+                <span class="score-val">{{ student.coding_total | round(1) }}/100</span>
+            </div>
+
+            <div class="score-item">
+                <span class="score-label">🗣️ Soft Skills</span>
+                <div class="score-track">
+                    <div class="score-fill" style="width:{{ student.soft_skill_total }}%"></div>
+                </div>
+                <span class="score-val">{{ student.soft_skill_total | round(1) }}/100</span>
+            </div>
+
+            <div class="score-item">
+                <span class="score-label">🛠️ Technical</span>
+                <div class="score-track">
+                    <div class="score-fill" style="width:{{ student.technical_total }}%"></div>
+                </div>
+                <span class="score-val">{{ student.technical_total | round(1) }}/100</span>
+            </div>
+
+            <div class="score-item">
+                <span class="score-label">📈 Engagement</span>
+                <div class="score-track">
+                    <div class="score-fill" style="width:{{ student.engagement_total }}%"></div>
+                </div>
+                <span class="score-val">{{ student.engagement_total | round(1) }}/100</span>
+            </div>
+        </div>
+
+        <!-- Radar Chart -->
+        <div class="chart-box">
+            <h3>📡 Skill Radar</h3>
+            <canvas id="radarChart"></canvas>
+        </div>
+
+    </div>
+
+    <!-- ── DETAILED SCORES TABLE ──────────────────────────────────────────── -->
+    <div class="detail-table-section">
+        <h3>📋 All Scores</h3>
+        <div class="detail-tables-row">
+
+            <table class="detail-table">
+                <tr><th colspan="2">🧑‍🎓 Basic</th></tr>
+                <tr><td>CGPA</td><td>{{ student.cgpa }}</td></tr>
+                <tr><td>Backlogs</td><td>{{ student.backlog_count }}</td></tr>
+                <tr><td>Attendance</td><td>{{ student.attendance_percentage }}%</td></tr>
+            </table>
+
+            <table class="detail-table">
+                <tr><th colspan="2">🧠 Aptitude</th></tr>
+                <tr><td>Quantitative</td><td>{{ student.aptitude_quant_score }}</td></tr>
+                <tr><td>Logical</td><td>{{ student.aptitude_logical_score }}</td></tr>
+                <tr><td>Verbal</td><td>{{ student.aptitude_verbal_score }}</td></tr>
+            </table>
+
+            <table class="detail-table">
+                <tr><th colspan="2">💻 Coding</th></tr>
+                <tr><td>Easy</td><td>{{ student.coding_easy_score }}</td></tr>
+                <tr><td>Medium</td><td>{{ student.coding_medium_score }}</td></tr>
+                <tr><td>Hard</td><td>{{ student.coding_hard_score }}</td></tr>
+                <tr><td>Contest Rating</td><td>{{ student.coding_contest_rating }}</td></tr>
+            </table>
+
+            <table class="detail-table">
+                <tr><th colspan="2">🗣️ Soft Skills</th></tr>
+                <tr><td>Communication</td><td>{{ student.communication_score }}</td></tr>
+                <tr><td>Presentation</td><td>{{ student.presentation_skill }}</td></tr>
+                <tr><td>Confidence</td><td>{{ student.confidence_score }}</td></tr>
+                <tr><td>Mock Interview</td><td>{{ student.interview_mock_score }}</td></tr>
+            </table>
+
+            <table class="detail-table">
+                <tr><th colspan="2">🛠️ Technical</th></tr>
+                <tr><td>Core Subject</td><td>{{ student.core_subject_score }}</td></tr>
+                <tr><td>Project</td><td>{{ student.project_score }}</td></tr>
+                <tr><td>Internship</td><td>{{ "Yes" if student.internship_experience else "No" }}</td></tr>
+                <tr><td>Certifications</td><td>{{ student.certification_count }}</td></tr>
+            </table>
+
+            <table class="detail-table">
+                <tr><th colspan="2">📈 Engagement</th></tr>
+                <tr><td>Hackathons</td><td>{{ student.hackathon_participation }}</td></tr>
+                <tr><td>LinkedIn</td><td>{{ student.linkedin_activity_score }}</td></tr>
+                <tr><td>Resume</td><td>{{ student.resume_score }}</td></tr>
+                <tr><td>Skill Assessment</td><td>{{ student.skill_assessment_score }}</td></tr>
+            </table>
+
+        </div>
+    </div>
+
+    <!-- ── META ───────────────────────────────────────────────────────────── -->
+    <p class="meta-info">
+        Submitted by <strong>{{ student.submitted_by }}</strong>
+        on {{ student.submitted_at }}
+    </p>
+
+</div>
+
+<script>
+new Chart(document.getElementById("radarChart"), {
+    type: "radar",
+    data: {
+        labels: ["Aptitude", "Coding", "Soft Skills", "Technical", "Engagement"],
+        datasets: [{
+            label: "{{ student.name }}",
+            data: [
+                {{ student.aptitude_total | round(1) }},
+                {{ student.coding_total | round(1) }},
+                {{ student.soft_skill_total | round(1) }},
+                {{ student.technical_total | round(1) }},
+                {{ student.engagement_total | round(1) }}
+            ],
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor:     "rgba(54, 162, 235, 1)",
+            borderWidth: 2,
+            pointBackgroundColor: "rgba(54, 162, 235, 1)"
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { r: { min: 0, max: 100 } }
+    }
+});
+</script>
+
+</body>
+</html>

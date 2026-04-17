@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="m-0">Student Profile</h5>
+                {% if current_user.role in ['admin', 'faculty'] %}
+                <a href="{{ url_for('students.edit', id=student.id) }}" class="btn btn-sm btn-light text-primary">Edit</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">{{ student.name }}</h3>
+                <h6 class="card-subtitle mb-3 text-muted">{{ student.roll_number }}</h6>
+                
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Department:</span>
+                    <strong>{{ student.department }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Batch:</span>
+                    <strong>{{ student.batch_year }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">CGPA:</span>
+                    <strong>{{ "%.2f"|format(student.cgpa) if student.cgpa else "N/A" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Backlogs:</span>
+                    <strong>{{ student.backlogs }}</strong>
+                </div>
+                
+                <hr>
+                <h6 class="text-muted mb-2">Skills:</h6>
+                <div class="mb-3">
+                    {% if student.skills %}
+                        {% for skill in student.skills %}
+                            <span class="badge bg-secondary">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted small">No skills listed</span>
+                    {% endif %}
+                </div>
+                
+                {% if student.resume_path %}
+                <div class="d-grid mt-3">
+                    <a href="/uploads/{{ student.resume_path }}" target="_blank" class="btn btn-outline-primary">View Resume</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if current_user.role in ['admin', 'faculty'] %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Run Prediction</h5>
+                <p class="small text-muted">Trigger ML model to predict placement readiness.</p>
+                <form method="POST" action="{{ url_for('predict.trigger_prediction', student_id=student.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary w-100">Predict Now</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="m-0">Placement Records</h5>
+                {% if current_user.role in ['admin', 'faculty'] %}
+                <a href="{{ url_for('placement.create', student_id=student.id) }}" class="btn btn-sm btn-outline-primary">Add Record</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Company</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Package</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in student.placement_records|sort(attribute='created_at', reverse=True) %}
+                        <tr>
+                            <td>{{ record.company }}</td>
+                            <td>{{ record.role_offered }}</td>
+                            <td>
+                                {% if record.status == 'placed' %}
+                                    <span class="badge bg-success">Placed</span>
+                                {% elif record.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">{{ record.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.2f LPA"|format(record.package_lpa) if record.package_lpa else "-" }}</td>
+                            <td>{{ record.offer_date.strftime('%Y-%m-%d') if record.offer_date else '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No placement records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="m-0">Prediction History</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for pred in student.prediction_logs|sort(attribute='created_at', reverse=True) %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ "%.1f"|format(pred.predicted_probability * 100) }}% Readiness</strong> 
+                            <br>
+                            <small class="text-muted">Model: {{ pred.model_version }} | Date: {{ pred.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        {% if pred.predicted_class %}
+                            <span class="badge bg-success rounded-pill">Ready</span>
+                        {% else %}
+                            <span class="badge bg-danger rounded-pill">At Risk</span>
+                        {% endif %}
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center py-3 text-muted">No prediction history.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

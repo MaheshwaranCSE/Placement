@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Students</h2>
+    <div>
+        <a href="{{ url_for('students.export', dept=dept) }}" class="btn btn-outline-secondary me-2">Export CSV</a>
+        <a href="{{ url_for('students.create') }}" class="btn btn-primary">Add Student</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form class="row gx-3 gy-2 align-items-center">
+            <div class="col-sm-5">
+                <input class="form-control" type="search" name="q" placeholder="Search name or roll number..." value="{{ search }}" hx-get="{{ url_for('students.list_students') }}" hx-trigger="keyup changed delay:300ms, search" hx-target="#student-table-container">
+            </div>
+            <div class="col-sm-4">
+                <select class="form-select" name="dept" hx-get="{{ url_for('students.list_students') }}" hx-trigger="change" hx-target="#student-table-container">
+                    <option value="">All Departments</option>
+                    <option value="CSE" {% if dept == 'CSE' %}selected{% endif %}>CSE</option>
+                    <option value="ECE" {% if dept == 'ECE' %}selected{% endif %}>ECE</option>
+                    <option value="MECH" {% if dept == 'MECH' %}selected{% endif %}>MECH</option>
+                    <option value="CIVIL" {% if dept == 'CIVIL' %}selected{% endif %}>CIVIL</option>
+                    <option value="IT" {% if dept == 'IT' %}selected{% endif %}>IT</option>
+                </select>
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="student-table-container">
+    {% include "students/_list_partial.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Roll Number</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Batch</th>
+                <th>CGPA</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.roll_number }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.department }}</td>
+                <td>{{ s.batch_year }}</td>
+                <td>{{ "%.2f"|format(s.cgpa) if s.cgpa else '-' }}</td>
+                <td>
+                    <a href="{{ url_for('students.detail', id=s.id) }}" class="btn btn-sm btn-outline-info">View</a>
+                    <a href="{{ url_for('students.edit', id=s.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center py-4 text-muted">No students found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('students.list_students', page=pagination.prev_num, q=request.args.get('q',''), dept=request.args.get('dept','')) }}">Previous</a>
+        </li>
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('students.list_students', page=page_num, q=request.args.get('q',''), dept=request.args.get('dept','')) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('students.list_students', page=pagination.next_num, q=request.args.get('q',''), dept=request.args.get('dept','')) }}">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}

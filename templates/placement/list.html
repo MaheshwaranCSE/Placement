@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Placement Records</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Student</th>
+                        <th>Company</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Package</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('students.detail', id=record.student_id) }}">
+                                {{ record.student.name }} ({{ record.student.roll_number }})
+                            </a>
+                        </td>
+                        <td>{{ record.company }}</td>
+                        <td>{{ record.role_offered }}</td>
+                        <td>
+                            {% if record.status == 'placed' %}
+                                <span class="badge bg-success">Placed</span>
+                            {% elif record.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% elif record.status == 'not_placed' %}
+                                <span class="badge bg-secondary">Not Placed</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ record.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.2f LPA"|format(record.package_lpa) if record.package_lpa else "-" }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No placement records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('placement.list_records', page=pagination.prev_num) }}">Previous</a>
+        </li>
+        {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('placement.list_records', page=page_num) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('placement.list_records', page=pagination.next_num) }}">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

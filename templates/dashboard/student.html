@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Student Dashboard</h2>
+
+{% if not student %}
+    <div class="alert alert-warning">
+        Your profile is not fully setup yet. Please contact your faculty.
+    </div>
+{% else %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">My CGPA</h5>
+                <h2 class="display-4">{{ student.cgpa if student.cgpa else "N/A" }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Placement Readiness</h5>
+                {% if latest_prediction %}
+                <h2 class="display-4">{{ "%.1f"|format(latest_prediction.predicted_probability * 100) }}%</h2>
+                <div class="progress mt-2">
+                    <div class="progress-bar {% if latest_prediction.predicted_probability > 0.7 %}bg-success{% elif latest_prediction.predicted_probability > 0.4 %}bg-warning{% else %}bg-danger{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ latest_prediction.predicted_probability * 100 }}%">
+                    </div>
+                </div>
+                {% else %}
+                <h2 class="display-4 text-muted">-</h2>
+                <p class="small text-muted mb-0">No prediction run yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Current Status</h5>
+                {% if placement_status == 'placed' %}
+                    <h2 class="display-4 text-success">Placed!</h2>
+                {% elif placement_status %}
+                    <h2 class="display-4 text-info">{{ placement_status|title }}</h2>
+                {% else %}
+                    <h2 class="display-4 text-secondary">In Process</h2>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <strong>Profile Details</strong>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-6">
+                <p><strong>Name:</strong> {{ student.name }}</p>
+                <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                <p><strong>Department:</strong> {{ student.department }} (Batch {{ student.batch_year }})</p>
+            </div>
+            <div class="col-sm-6">
+                <p><strong>Backlogs:</strong> {{ student.backlogs }}</p>
+                <p><strong>Skills:</strong> {{ student.skills|join(', ') if student.skills else 'None' }}</p>
+                <p><strong>Resume:</strong> 
+                    {% if student.resume_path %}
+                    <a href="/uploads/{{ student.resume_path }}" target="_blank">View Resume</a>
+                    {% else %}
+                    <span class="text-muted">Not uploaded</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

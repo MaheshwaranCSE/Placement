@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard — Campus Placement Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- ── NAVBAR ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="nav-brand">🎓 Campus Placement Portal</div>
+    <div class="nav-right">
+        <span class="nav-user">👤 {{ user }}</span>
+        <a href="{{ url_for('add_student') }}" class="btn-nav-add">+ Add Student</a>
+        <a href="{{ url_for('logout') }}" class="btn-nav-logout">Logout</a>
+    </div>
+</nav>
+
+<div class="main-container">
+
+    <!-- ── SUMMARY CARDS ──────────────────────────────────────────────────── -->
+    <div class="cards-row">
+        <div class="card card-total">
+            <div class="card-icon">👥</div>
+            <div class="card-info">
+                <h3>{{ total }}</h3>
+                <p>Total Students</p>
+            </div>
+        </div>
+        <div class="card card-ready">
+            <div class="card-icon">✅</div>
+            <div class="card-info">
+                <h3>{{ ready }}</h3>
+                <p>Ready</p>
+            </div>
+        </div>
+        <div class="card card-moderate">
+            <div class="card-icon">⚠️</div>
+            <div class="card-info">
+                <h3>{{ moderate }}</h3>
+                <p>Moderate</p>
+            </div>
+        </div>
+        <div class="card card-risk">
+            <div class="card-icon">❌</div>
+            <div class="card-info">
+                <h3>{{ at_risk }}</h3>
+                <p>At Risk</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CHARTS ROW ──────────────────────────────────────────────────────── -->
+    <div class="charts-row">
+        <div class="chart-box">
+            <h3>Overall Status Distribution</h3>
+            <canvas id="pieChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>Department-wise Breakdown</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+    </div>
+
+    <!-- ── FILTERS ─────────────────────────────────────────────────────────── -->
+    <div class="filters-bar">
+        <form method="GET" action="/dashboard" class="filters-form">
+
+            <input type="text" name="search"
+                   placeholder="🔍 Search by name or ID..."
+                   value="{{ search }}" class="filter-search"/>
+
+            <select name="dept" class="filter-select">
+                {% for d in departments %}
+                <option value="{{ d }}"
+                    {% if d == dept_filter %}selected{% endif %}>
+                    {{ d }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <select name="status" class="filter-select">
+                <option value="All"      {% if status_filter == 'All'      %}selected{% endif %}>All Status</option>
+                <option value="Ready"    {% if status_filter == 'Ready'    %}selected{% endif %}>✅ Ready</option>
+                <option value="Moderate" {% if status_filter == 'Moderate' %}selected{% endif %}>⚠️ Moderate</option>
+                <option value="At Risk"  {% if status_filter == 'At Risk'  %}selected{% endif %}>❌ At Risk</option>
+            </select>
+
+            <button type="submit" class="btn-filter">Apply</button>
+            <a href="/dashboard" class="btn-reset">Reset</a>
+        </form>
+
+        <span class="result-count">Showing {{ students|length }} students</span>
+    </div>
+
+    <!-- ── STUDENT TABLE ───────────────────────────────────────────────────── -->
+    <div class="table-wrapper">
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Dept</th>
+                    <th>CGPA</th>
+                    <th>Backlogs</th>
+                    <th>Apt Score</th>
+                    <th>Code Score</th>
+                    <th>Soft Skills</th>
+                    <th>Assessment</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if students %}
+                    {% for s in students %}
+                    <tr class="row-{{ s.placement_status | lower | replace(' ', '-') }}">
+                        <td>{{ s.student_id }}</td>
+                        <td><strong>{{ s.name }}</strong></td>
+                        <td><span class="dept-badge">{{ s.department }}</span></td>
+                        <td>{{ s.cgpa }}</td>
+                        <td>
+                            {% if s.backlog_count > 2 %}
+                                <span class="backlog-high">{{ s.backlog_count }}</span>
+                            {% else %}
+                                {{ s.backlog_count }}
+                            {% endif %}
+                        </td>
+                        <td>{{ s.aptitude_total | round(1) }}</td>
+                        <td>{{ s.coding_total | round(1) }}</td>
+                        <td>{{ s.soft_skill_total | round(1) }}</td>
+                        <td>
+                            <div class="score-bar-wrap">
+                                <div class="score-bar"
+                                     style="width:{{ s.placement_assessment_score }}%"
+                                     data-status="{{ s.placement_status }}">
+                                </div>
+                                <span>{{ s.placement_assessment_score }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ s.placement_status | lower | replace(' ', '-') }}">
+                                {% if s.placement_status == 'Ready' %}✅
+                                {% elif s.placement_status == 'Moderate' %}⚠️
+                                {% else %}❌{% endif %}
+                                {{ s.placement_status }}
+                            </span>
+                            {% if s.override_applied %}
+                                <span class="override-tag" title="{{ s.override_reason }}">🔒</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/student/{{ s.student_id }}" class="btn-view">View</a>
+                            <form method="POST" action="/delete/{{ s.student_id }}"
+                                  style="display:inline"
+                                  onsubmit="return confirm('Delete {{ s.name }}?')">
+                                <button type="submit" class="btn-delete">Del</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="11" class="empty-table">
+                            No students found. <a href="{{ url_for('add_student') }}">Add a student</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- end main-container -->
+
+<!-- ── CHARTS SCRIPT ───────────────────────────────────────────────────────── -->
+<script>
+// Fetch stats from API
+fetch("/api/stats")
+.then(r => r.json())
+.then(data => {
+
+    // ── Pie Chart ─────────────────────────────────────────────────────────────
+    new Chart(document.getElementById("pieChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["Ready", "Moderate", "At Risk"],
+            datasets: [{
+                data: [data.ready, data.moderate, data.at_risk],
+                backgroundColor: ["#28a745","#ffc107","#dc3545"],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: "bottom" } }
+        }
+    });
+
+    // ── Bar Chart ─────────────────────────────────────────────────────────────
+    const depts  = Object.keys(data.dept_stats);
+    const ready  = depts.map(d => data.dept_stats[d].Ready);
+    const mod    = depts.map(d => data.dept_stats[d].Moderate);
+    const risk   = depts.map(d => data.dept_stats[d]["At Risk"]);
+
+    new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+            labels: depts,
+            datasets: [
+                { label: "Ready",    data: ready, backgroundColor: "#28a745" },
+                { label: "Moderate", data: mod,   backgroundColor: "#ffc107" },
+                { label: "At Risk",  data: risk,  backgroundColor: "#dc3545" },
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { x: { stacked: true }, y: { stacked: true } },
+            plugins: { legend: { position: "bottom" } }
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>

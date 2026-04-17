@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+
+# Model serialization
+*.pkl
+
+# Logs
+logs/
+*.log
+
+# Uploads and temporary files
+uploads/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE config
+.vscode/
+.idea/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Celery
+celerybeat-schedule
+*.pid
+
+# DB
+*.sqlite
+*.db
+
+# Nginx/Certbot
+certbot/conf/
+certbot/www/
